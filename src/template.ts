@@ -38,6 +38,7 @@ interface ComponentConfig {
   includes: Set<string>
   exclude: Set<string>
   thirdPartyComponents: Map<string, Set<string>>
+  runtimeComponents: Map<string, Set<string>>
   includeAll: boolean
   internalComponents: Map<string, Set<string>>
 }
@@ -122,9 +123,7 @@ export class BaseTemplate {
           if (hasOwn(component, prop)) {
             let propValue = component[prop]
             // 事件绑定
-            // if (prop.startsWith('bind')) {
             if (/^(bind|catch|capture-bind|capture-catch):?(.*?)(?:\.(.*))?$/.exec(prop)) {
-              // TODO：事件绑定写法的处理
               propValue = '__invoke'
             } else if (prop === 'rawTag') {
               // do nothing
@@ -428,6 +427,16 @@ export class BaseTemplate {
       }
     })
 
+    componentConfig.runtimeComponents.forEach((attrs, compName) => {
+      if (!isSupportRecursive && supportXS && nestElements.has(compName) && level + 1 > nestElements.get(compName)!) return
+        
+        template += `
+<template name="tmpl_${level}_${compName}">
+  <${compName} ${this.buildThirdPartyAttr(attrs)} id="{{i.data.moduleId}}"></${compName}>
+</template>
+  `
+    })
+
     return template
   }
 
@@ -567,7 +576,7 @@ export class RecursiveTemplate extends BaseTemplate {
 
 export class UnRecursiveTemplate extends BaseTemplate {
   isSupportRecursive = false
-  private _baseLevel = 10
+  private _baseLevel = 8
   private componentConfig: ComponentConfig
 
   set baseLevel (lv) {
@@ -581,12 +590,9 @@ export class UnRecursiveTemplate extends BaseTemplate {
   public buildTemplate = (componentConfig: ComponentConfig) => {
     this.componentConfig = componentConfig
     if (!this.miniComponents) {
-      // TODO: this.internalComponents 的替换 -> 通过传参的形式
       // createMiniComponents 方法会创建出 view -> static-view / pure-view | text -> static-text 等节点的配置
-      // this.miniComponents = this.createMiniComponents(this.internalComponents)
       // miniComponents 包含了需要被渲染出来的组件
       this.miniComponents = this.createMiniComponents(componentConfig.internalComponents)
-      console.log('the miniComponents is:', this.miniComponents)
     }
     // 筛选出所有使用到的基础组件
     const components = Object.keys(this.miniComponents)
@@ -650,7 +656,8 @@ export class UnRecursiveTemplate extends BaseTemplate {
   protected buildXSTmplName () {
     const isLoopComps = [
       ...Array.from(this.nestElements.keys()),
-      ...Array.from(this.componentConfig.thirdPartyComponents.keys())
+      ...Array.from(this.componentConfig.thirdPartyComponents.keys()),
+      ...Array.from(this.componentConfig.runtimeComponents.keys())
     ]
     const isLoopCompsSet = new Set(isLoopComps) // 可递归循环的组件
     const hasMaxComps: string[] = [] // 有最大递归循环数限制的组件
