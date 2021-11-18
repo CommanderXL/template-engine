@@ -9,7 +9,6 @@
  *         将来或许会把数据序列化^1 的操作也放到小程序脚本语言里。
  *  - 不支持：使用纯 *xml 语法
  *
- * ^1: packages/taro-runtime/src/hydrate.ts
 */
 
 import {

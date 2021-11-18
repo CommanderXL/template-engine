@@ -69,24 +69,10 @@ export const hasOwn = (
   key: string | symbol
 ) => hasOwnProperty.call(val, key)
 
-const reportIssue = '如有疑问，请提交 issue 至：https://github.com/nervjs/taro/issues'
-
-/**
- * ensure takes a condition and throw a error if the condition fails,
- * like failure::ensure: https://docs.rs/failure/0.1.1/failure/macro.ensure.html
- * @param condition condition.
- * @param msg error message.
- */
-export function ensure (condition: boolean, msg: string): asserts condition {
-  if (!condition) {
-    throw new Error(msg + '\n' + reportIssue)
-  }
-}
-
 export function warn (condition: boolean, msg: string) {
   if (process.env.NODE_ENV !== 'production') {
     if (condition) {
-      console.warn(`[taro warn] ${msg}`)
+      console.warn(`[mpx warn] ${msg}`)
     }
   }
 }
