@@ -104,7 +104,6 @@ export class BaseTemplate {
     return name
   }
 
-  // TODO：需要改造 -> 根据传入的 componentConfig 配置信息
   protected createMiniComponents (components) {
     const result = Object.create(null)
 
@@ -154,37 +153,6 @@ export class BaseTemplate {
         // swiper-item 去除 style 配置
         if (compName === 'swiper-item') {
           delete newComp.style
-        }
-
-        // catch-view 的处理(绑定了 touchmove 事件)
-        if (compName === 'view') {
-          const reg = /^(bind|on)(touchmove|TouchMove)$/
-          const comp = { ...newComp }
-          Object.keys(comp).forEach(originKey => {
-            if (!reg.test(originKey)) return
-
-            const key = originKey.replace(reg, 'catch$2')
-            comp[key] = comp[originKey]
-            delete comp[originKey]
-          })
-
-          result['catch-view'] = comp
-        }
-
-        // 生成没有绑定事件的静态节点 -> static-xxx
-        if (compName === 'view' || compName === 'text' || compName === 'image') {
-          const comp: Record<any, any> = {}
-          Object.keys(newComp).forEach(key => {
-            const value = newComp[key]
-            if (value !== '__invoke' && key !== 'data-eventconfigs') comp[key] = value
-          })
-          result[`static-${compName}`] = comp
-          if (compName === 'view') {
-            result['pure-view'] = {
-              style: comp.style,
-              class: comp.class
-            }
-          }
         }
 
         if (compName === 'slot' || compName === 'slot-view') {
@@ -553,9 +521,7 @@ export class RecursiveTemplate extends BaseTemplate {
 
   public buildTemplate = (componentConfig: ComponentConfig) => {
     let template = this.buildBaseTemplate()
-    if (!this.miniComponents) {
-      this.miniComponents = this.createMiniComponents(this.internalComponents)
-    }
+    this.miniComponents = this.createMiniComponents(componentConfig)
     const ZERO_FLOOR = 0
     const components = Object.keys(this.miniComponents)
       .filter(c => componentConfig.includes.size && !componentConfig.includeAll ? componentConfig.includes.has(c) : true)
@@ -588,14 +554,11 @@ export class UnRecursiveTemplate extends BaseTemplate {
 
   public buildTemplate = (componentConfig: ComponentConfig) => {
     this.componentConfig = componentConfig
-    if (!this.miniComponents) {
-      // createMiniComponents 方法会创建出 view -> static-view / pure-view | text -> static-text 等节点的配置
-      // miniComponents 包含了需要被渲染出来的组件
-      this.miniComponents = this.createMiniComponents(componentConfig.internalComponents)
-    }
-    // 筛选出所有使用到的基础组件
+    // createMiniComponents 方法会创建出 view -> static-view / pure-view | text -> static-text 等节点的配置
+    // miniComponents 包含了需要被渲染出来的组件
+    this.miniComponents = this.createMiniComponents(componentConfig.internalComponents)
+
     const components = Object.keys(this.miniComponents)
-      .filter(c => componentConfig.includes.size && !componentConfig.includeAll ? componentConfig.includes.has(c) : true)
 
     let template = this.buildBaseTemplate() // 生成入口模板
     for (let i = 0; i < this.baseLevel; i++) { // 生成层级模板
