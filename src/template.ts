@@ -125,10 +125,8 @@ export class BaseTemplate {
               propValue = '__invoke'
             } else if (prop === 'rawTag') {
               // do nothing
-            } else if (prop === 'data-eventconfigs') {
-              propValue = 'i.data.eventconfigs'
             } else if (propValue === '') {
-              // <button primary></button> 单属性值的处理?
+              // <button primary></button> 单属性值的处理
               propValue = `i.data.${toCamelCase(prop)}`
             } else if (isBooleanStringLiteral(propValue) || isNumber(+propValue)) {
               propValue = this.supportXS
@@ -208,29 +206,18 @@ export class BaseTemplate {
 
       let strVal = ''
       switch (attr) {
-        case 'big-attrs':
-          strVal = '"{{ i.data.bigAttrs }}"'
-          break
-        case 'mpxPageStatus':
-          strVal = '"{{ i.data.mpxPageStatus || \'\' }}"'
+        case 'mpxAttrs':
+          strVal = '"{{ i.data }}"'
           break
         case 'mpxShow':
           strVal = '"{{ i.data.mpxShow === undefined ? true : i.data.mpxShow }}"'
           break
-        case 'data-eventconfigs':
-          strVal = '"{{ i.data.eventconfigs }}"'
-          break
         default:
-          if (attr.includes('-')) {
-            strVal = `"{{ i.data['${attr}'] }}"`
-          } else {
-            strVal = `"{{ i.data.${attr} }}"`
-          }
+          strVal = `"{{ i.data.${toCamelCase(attr)} }}"`
           break
       }
 
       return str + `${attr}=${strVal} `
-      // return str + `${attr}="{{i.${toCamelCase(attr)}}}" `
     }, '')
   }
 
@@ -321,7 +308,6 @@ export class BaseTemplate {
       default:
         if (comp.attributes.rawTag) {
           nodeName = comp.attributes.rawTag
-          // delete comp.attributes.rawTag
         } else {
           nodeName = comp.nodeName
         }
