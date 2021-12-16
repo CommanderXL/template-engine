@@ -176,8 +176,12 @@ export class BaseTemplate {
 
     return `${this.buildXsTemplate()}
 <template name="mpx_tmpl">
-  <block ${Adapter.for}="{{r.children}}" ${Adapter.key}="index">
-    <template is="tmpl_0_${Shortcuts.Container}" data="{{${data}}}" />
+  <element r="{{r}}" wx:if="{{r}}"></element>
+</template>
+
+<template name="tmpl_0_block">
+  <block ${Adapter.for}="{{i.children}}" ${Adapter.key}="index">
+    <template is="tmpl_1_${Shortcuts.Container}" data="{{${data}}}" />
   </block>
 </template>
 `
@@ -273,11 +277,11 @@ export class BaseTemplate {
 </template>
 
 <template name="tmpl_${level}_${comp.nodeName}_focus">
-  <${comp.nodeName} ${this.buildAttribute(comp.attributes, comp.nodeName)} id="{{i.data.moduleId}}">${children}</${comp.nodeName}>
+  <${comp.nodeName} ${this.buildAttribute(comp.attributes, comp.nodeName)} data-mid="{{i.data.moduleId}}">${children}</${comp.nodeName}>
 </template>
 
 <template name="tmpl_${level}_${comp.nodeName}_blur">
-  <${comp.nodeName} ${this.buildAttribute(attrs, comp.nodeName)} id="{{i.data.moduleId}}">${children}</${comp.nodeName}>
+  <${comp.nodeName} ${this.buildAttribute(attrs, comp.nodeName)} data-mid="{{i.data.moduleId}}">${children}</${comp.nodeName}>
 </template>
 `
     if (isFunction(this.modifyTemplateResult)) {
@@ -316,7 +320,7 @@ export class BaseTemplate {
 
     let res = `
 <template name="tmpl_${level}_${comp.nodeName}">
-  <${nodeName} ${this.buildAttribute(comp.attributes, comp.nodeName)} id="{{i.data.moduleId}}">${children}</${nodeName}>
+  <${nodeName} ${this.buildAttribute(comp.attributes, comp.nodeName)} data-mid="{{i.data.moduleId}}">${children}</${nodeName}>
 </template>
 `
 
@@ -349,7 +353,7 @@ export class BaseTemplate {
       if (compName === 'custom-wrapper') {
         template += `
 <template name="tmpl_${level}_${compName}">
-  <${compName} i="{{i}}" l="{{l}}" id="{{i.data.moduleId}}">
+  <${compName} i="{{i}}" l="{{l}}" data-mid="{{i.data.moduleId}}">
   </${compName}>
 </template>
   `
@@ -363,7 +367,7 @@ export class BaseTemplate {
         // TODO: 需要根据组件的特性（非运行时/运行时组件）动态生成对应的模板内容
         template += `
 <template name="tmpl_${level}_${compName}">
-  <${compName} ${this.buildThirdPartyAttr(attrs)} id="{{i.data.moduleId}}">
+  <${compName} ${this.buildThirdPartyAttr(attrs)} data-mid="{{i.data.moduleId}}">
     <block ${Adapter.for}="{{i.${Shortcuts.Children}}}" ${Adapter.key}="index">
       <block wx:if="{{ item.data['slot'] }}">
         <view slot="{{ item.data['slot'] }}">
@@ -385,7 +389,7 @@ export class BaseTemplate {
         
         template += `
 <template name="tmpl_${level}_${compName}">
-  <${compName} ${this.buildThirdPartyAttr(attrs)} id="{{i.data.moduleId}}"></${compName}>
+  <${compName} ${this.buildThirdPartyAttr(attrs)} data-mid="{{i.data.moduleId}}"></${compName}>
 </template>
   `
     })
