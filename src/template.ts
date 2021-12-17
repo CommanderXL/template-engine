@@ -1,4 +1,6 @@
 /**
+ * Fork from @tarojs/shared for generating base template
+ * 
  * 这里我们需要关心的小程序种类有两类：
  * 1. 模板递归：
  *  - 支持：tmpl0 套 tmpl0

@@ -1,12 +1,11 @@
 {
   "name": "@mpxjs/template-engine",
   "version": "1.0.0",
-  "description": "> TODO: description",
+  "description": "template-engine for mpx runtime render",
   "author": "xiaolei",
   "homepage": "",
   "license": "MIT",
   "main": "dist/index.js",
-  "module": "dist/shared.esm.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
