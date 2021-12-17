@@ -168,21 +168,9 @@ export class BaseTemplate {
 
   // 递归生成基础模板，被注入到 base.wxml 当中的文本内容
   protected buildBaseTemplate () {
-    const Adapter = this.Adapter
-
-    const data = !this.isSupportRecursive && this.supportXS
-      ? `${this.dataKeymap('i:item,l:\'\'')}`
-      : this.dataKeymap('i:item')
-
     return `${this.buildXsTemplate()}
 <template name="mpx_tmpl">
   <element r="{{r}}" wx:if="{{r}}"></element>
-</template>
-
-<template name="tmpl_0_block">
-  <block ${Adapter.for}="{{i.children}}" ${Adapter.key}="index">
-    <template is="tmpl_1_${Shortcuts.Container}" data="{{${data}}}" />
-  </block>
 </template>
 `
   }
@@ -397,6 +385,21 @@ export class BaseTemplate {
     return template
   }
 
+  protected buildBlockTemplate (level: number) {
+    const { Adapter, isSupportRecursive, supportXS } = this
+    const nextLevel = isSupportRecursive ? 0 : level + 1
+    const data = !isSupportRecursive && supportXS
+      ? `${this.dataKeymap('i:item,l:\'\'')}`
+      : this.dataKeymap('i:item')
+    return `
+<template name="tmpl_${level}_block">
+  <block ${Adapter.for}="{{i.children}}" ${Adapter.key}="index">
+    <template is="tmpl_${nextLevel}_${Shortcuts.Container}" data="{{${data}}}" />
+  </block>
+</template>
+`
+  }
+
   protected buildContainerTemplate (level: number, restart = false) {
     let tmpl = ''
     if (restart) {
@@ -563,7 +566,9 @@ export class UnRecursiveTemplate extends BaseTemplate {
   protected buildFloor (level: number, components: string[], restart = false) {
     if (restart) return this.buildContainerTemplate(level, restart)
 
-    let template = components.reduce((current, nodeName) => {
+    let template = this.buildBlockTemplate(level)
+
+    template += components.reduce((current, nodeName) => {
       const attributes: Attributes = this.miniComponents[nodeName]
       return current + this.buildComponentTemplate({ nodeName, attributes }, level)
     }, '')
